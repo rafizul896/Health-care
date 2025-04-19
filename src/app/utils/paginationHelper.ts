@@ -6,25 +6,30 @@ interface IOptions {
 }
 
 interface IOptionsResult {
+  page: number;
+  limit: number;
   skip: number;
-  take: number;
-  orderBy: object;
+  sortBy: string;
+  sortOrder: string;
 }
 
-const paginationHelper = (option: IOptions): IOptionsResult => {
-  const page: number = Number(option.page) || 1;
-  const limit: number = Number(option.limit) || 10;
-  const skip: number = (page - 1) * limit;
-  const sortBy: string = option.sortBy || "createdAt";
-  const sortOrder: string = option.sortOrder || "desc";
+const calculatePagination = (options: IOptions): IOptionsResult => {
+  const page: number = Number(options.page) || 1;
+  const limit: number = Number(options.limit) || 10;
+  const skip: number = (Number(page) - 1) * limit;
+
+  const sortBy: string = options.sortBy || "createdAt";
+  const sortOrder: string = options.sortOrder || "desc";
 
   return {
+    page,
+    limit,
     skip,
-    take: limit,
-    orderBy: {
-      [sortBy]: sortOrder,
-    },
+    sortBy,
+    sortOrder,
   };
 };
 
-export default paginationHelper;
+export const paginationHelper = {
+  calculatePagination,
+};
