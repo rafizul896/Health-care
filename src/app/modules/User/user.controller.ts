@@ -1,23 +1,20 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { UserService } from "./user.service";
+import sendResponse from "../../utils/sendResponse ";
+import status from "http-status";
 
-const createAdmin = async (req: Request, res: Response) => {
+const createAdmin = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const result = await UserService.createAdmin(req.body);
 
-    res.status(200).json({
+    sendResponse(res, {
+      statusCode: status.OK,
       success: true,
       message: "Admin created successfully",
-      result,
+      data: result,
     });
   } catch (err) {
-    if (err instanceof Error) {
-      res.status(500).json({
-        success: false,
-        message: err?.message || "Something went wrong",
-        error: err
-      });
-    }
+    next(err);
   }
 };
 

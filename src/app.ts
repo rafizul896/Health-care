@@ -1,6 +1,8 @@
-import express, { Application, Request, Response } from "express";
+import express, { Application, NextFunction, Request, Response } from "express";
 import cors from "cors";
 import router from "./app/routes";
+import status from "http-status";
+import globalErrorHandler from "./app/middlewares/globalErrorHandler";
 
 const app: Application = express();
 app.use(cors());
@@ -9,6 +11,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// application routes
 app.use("/api/v1", router);
 
 app.get("/", (req: Request, res: Response) => {
@@ -17,5 +20,7 @@ app.get("/", (req: Request, res: Response) => {
     message: "Health care server is running...!",
   });
 });
+
+app.use(globalErrorHandler);
 
 export default app;
