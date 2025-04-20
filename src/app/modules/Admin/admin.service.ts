@@ -29,6 +29,10 @@ const getAllFromDB = async (params: any, options: any) => {
     });
   }
 
+  andCondition.push({
+    isDeleted: false,
+  });
+
   const whereConditions: Prisma.AdminWhereInput = { AND: andCondition };
 
   const result = await prisma.admin.findMany({
@@ -61,20 +65,25 @@ const getAllFromDB = async (params: any, options: any) => {
   };
 };
 
-const getByIdFromDB = async (id: string) => {
+const getByIdFromDB = async (id: string): Promise<Admin | null> => {
   const result = await prisma.admin.findUnique({
     where: {
       id,
+      isDeleted: false,
     },
   });
 
   return result;
 };
 
-const updateIntoDB = async (id: string, payload: Partial<Admin>) => {
+const updateIntoDB = async (
+  id: string,
+  payload: Partial<Admin>
+): Promise<Admin> => {
   await prisma.admin.findUniqueOrThrow({
     where: {
       id,
+      isDeleted: false,
     },
   });
 
@@ -90,21 +99,60 @@ const updateIntoDB = async (id: string, payload: Partial<Admin>) => {
   return result;
 };
 
-const deleteFromDB = async (id: string) => {
+const deleteFromDB = async (id: string): Promise<Admin> => {
+  await prisma.admin.findUniqueOrThrow({
+    where: {
+      id,
+    },
+  });
+
   const result = await prisma.$transaction(async (tx) => {
-    const adminDelete = await tx.admin.delete({
+    const adminDeleteData = await tx.admin.delete({
       where: {
         id,
       },
     });
 
-    const userDelete = await tx.user.delete({
+    await tx.user.delete({
       where: {
-        email: adminDelete.email,
+        email: adminDeleteData.email,
       },
     });
 
-    return adminDelete;
+    return adminDeleteData;
+  });
+
+  return result;
+};
+
+const softDeleteFromDB = async (id: string): Promise<Admin> => {
+  await prisma.admin.findUniqueOrThrow({
+    where: {
+      id,
+      isDeleted: false,
+    },
+  });
+
+  const result = await prisma.$transaction(async (tx) => {
+    const adminDeleteData = await tx.admin.update({
+      where: {
+        id,
+      },
+      data: {
+        isDeleted: true,
+      },
+    });
+
+    await tx.user.update({
+      where: {
+        email: adminDeleteData.email,
+      },
+      data: {
+        status: "DELETED",
+      },
+    });
+
+    return adminDeleteData;
   });
 
   return result;
@@ -115,4 +163,5 @@ export const AdminService = {
   getByIdFromDB,
   updateIntoDB,
   deleteFromDB,
+  softDeleteFromDB,
 };
