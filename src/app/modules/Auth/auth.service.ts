@@ -3,6 +3,8 @@ import bcrypt from "bcrypt";
 import { generateToken, verifyToken } from "./auth.utils";
 import { UserStatus } from "@prisma/client";
 import config from "../../config";
+import AppError from "../../errors/AppError";
+import status from "http-status";
 
 const loginUser = async (payload: { email: string; password: string }) => {
   const userData = await prisma.user.findUniqueOrThrow({
@@ -18,7 +20,7 @@ const loginUser = async (payload: { email: string; password: string }) => {
   );
 
   if (!isCurrectPassword) {
-    throw new Error("Invalid email or password");
+    throw new AppError(status.UNAUTHORIZED, "Invalid email or password");
   }
 
   const jwtPayload = {
@@ -51,7 +53,7 @@ const refreshToken = async (token: string) => {
   try {
     decodedData = verifyToken(token, config.JWT_REFRESH_SECRET as string);
   } catch (err) {
-    throw new Error("You are not autherized!");
+    throw new AppError(status.UNAUTHORIZED, "You are not autherized!");
   }
 
   const isUserExist = await prisma.user.findUniqueOrThrow({
