@@ -1,8 +1,8 @@
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload, Secret } from "jsonwebtoken";
 
 export const generateToken = (
   payload: { email: string; role: string },
-  secret: string,
+  secret: Secret,
   expiresIn: any
 ) => {
   return jwt.sign(payload, secret, {
@@ -11,6 +11,6 @@ export const generateToken = (
   });
 };
 
-export const verifyToken = (token: string, secret: string) => {
-  return jwt.verify(token, secret);
+export const verifyToken = (token: string, secret: Secret) => {
+  return jwt.verify(token, secret) as JwtPayload;
 };

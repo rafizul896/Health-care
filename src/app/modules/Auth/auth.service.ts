@@ -1,12 +1,14 @@
 import prisma from "../../shared/prisma";
 import bcrypt from "bcrypt";
 import { generateToken, verifyToken } from "./auth.utils";
-import { JwtPayload } from "jsonwebtoken";
+import { UserStatus } from "@prisma/client";
+import config from "../../config";
 
 const loginUser = async (payload: { email: string; password: string }) => {
   const userData = await prisma.user.findUniqueOrThrow({
     where: {
       email: payload.email,
+      status: UserStatus.ACTIVE,
     },
   });
 
@@ -24,8 +26,17 @@ const loginUser = async (payload: { email: string; password: string }) => {
     role: userData.role,
   };
 
-  const accessToken = generateToken(jwtPayload, "zxcvbnm", "5m");
-  const refreshToken = generateToken(jwtPayload, "asdfghjkl", "30d");
+  const accessToken = generateToken(
+    jwtPayload,
+    config.JWT_ACCESS_SECRET as string,
+    config.JWT_ACCESS_EXPIRES_IN
+  );
+
+  const refreshToken = generateToken(
+    jwtPayload,
+    config.JWT_REFRESH_SECRET as string,
+    config.JWT_REFRESH_EXPIRES_IN
+  );
 
   return {
     accessToken,
@@ -38,7 +49,7 @@ const refreshToken = async (token: string) => {
   let decodedData;
 
   try {
-    decodedData = verifyToken(token, "asdfghjkl") as JwtPayload;
+    decodedData = verifyToken(token, config.JWT_REFRESH_SECRET as string);
   } catch (err) {
     throw new Error("You are not autherized!");
   }
@@ -46,6 +57,7 @@ const refreshToken = async (token: string) => {
   const isUserExist = await prisma.user.findUniqueOrThrow({
     where: {
       email: decodedData?.email,
+      status: UserStatus.ACTIVE,
     },
   });
 
@@ -54,7 +66,11 @@ const refreshToken = async (token: string) => {
     role: isUserExist?.role,
   };
 
-  const accessToken = generateToken(jwtPayload, "zxcvbnm", "5m");
+  const accessToken = generateToken(
+    jwtPayload,
+    config.JWT_ACCESS_SECRET as string,
+    config.JWT_ACCESS_EXPIRES_IN
+  );
 
   return { accessToken };
 };
