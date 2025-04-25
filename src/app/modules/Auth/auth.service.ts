@@ -6,6 +6,7 @@ import config from "../../config";
 import AppError from "../../errors/AppError";
 import status from "http-status";
 import sendEmail from "../../utils/sendEmail";
+import { Secret } from "jsonwebtoken";
 
 const loginUser = async (payload: { email: string; password: string }) => {
   const userData = await prisma.user.findUniqueOrThrow({
@@ -150,9 +151,47 @@ const forgotPassword = async (payload: { email: string }) => {
   return;
 };
 
+const resetPassword = async (
+  token: string,
+  payload: { id: string; password: string }
+) => {
+  const userData = await prisma.user.findUniqueOrThrow({
+    where: {
+      id: payload.id,
+      status: UserStatus.ACTIVE,
+    },
+  });
+
+  const isValidToken = verifyToken(
+    token,
+    config.JWT_RESET_PASSWORD_SECRET as Secret
+  );
+
+  if (!isValidToken) {
+    throw new AppError(status.FORBIDDEN, "Something went wrong.Try again");
+  }
+
+  const hashedPassword = await bcrypt.hash(
+    payload.password,
+    Number(config.BCRYPT_SALt_ROUNDS)
+  );
+
+  await prisma.user.update({
+    where: {
+      id: payload.id,
+    },
+    data: {
+      password: hashedPassword,
+    },
+  });
+
+  return;
+};
+
 export const AuthServices = {
   loginUser,
   refreshToken,
   changePassword,
   forgotPassword,
+  resetPassword,
 };
