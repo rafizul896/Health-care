@@ -2,6 +2,7 @@ import status from "http-status";
 import catchAsync from "../../utils/catchAsync ";
 import sendResponse from "../../utils/sendResponse ";
 import { AuthServices } from "./auth.service";
+import { Request } from "express";
 
 const loginUser = catchAsync(async (req, res) => {
   const result = await AuthServices.loginUser(req.body);
@@ -30,14 +31,27 @@ const refreshToken = catchAsync(async (req, res) => {
   });
 });
 
-const changePassword = catchAsync(async (req, res) => {
-  const user = req.user;
-  const result = await AuthServices.changePassword(user, req.body);
+const changePassword = catchAsync(
+  async (req: Request & { user?: any }, res) => {
+    const user = req.user;
+    const result = await AuthServices.changePassword(user, req.body);
+
+    sendResponse(res, {
+      statusCode: status.OK,
+      success: true,
+      message: "Password changed Successfully!",
+      data: result,
+    });
+  }
+);
+
+const forgotPassword = catchAsync(async (req, res) => {
+  const result = await AuthServices.forgotPassword(req.body);
 
   sendResponse(res, {
     statusCode: status.OK,
     success: true,
-    message: "Password changed Successfully!",
+    message: "Check you email and reset your password.",
     data: result,
   });
 });
@@ -46,4 +60,5 @@ export const AuthController = {
   loginUser,
   refreshToken,
   changePassword,
+  forgotPassword,
 };
