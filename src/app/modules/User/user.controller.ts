@@ -1,11 +1,10 @@
-import { NextFunction, Request, Response } from "express";
 import { UserService } from "./user.service";
 import sendResponse from "../../utils/sendResponse ";
 import status from "http-status";
 import catchAsync from "../../utils/catchAsync ";
 
 const createAdmin = catchAsync(async (req, res) => {
-  const result = await UserService.createAdmin(req.body);
+  const result = await UserService.createAdmin(req);
 
   sendResponse(res, {
     statusCode: status.OK,
