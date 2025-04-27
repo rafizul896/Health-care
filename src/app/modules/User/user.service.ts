@@ -3,14 +3,15 @@ import bcrypt from "bcrypt";
 import prisma from "../../shared/prisma";
 import config from "../../config";
 import { sendImageToCloudinary } from "../../middlewares/fileUploader";
+import { IUploadedFile } from "../../interfaces/file";
 
 const createAdmin = async (req: any) => {
-  const data = req.body.data;
-  const file = req.file;
+  const data = req.body;
+  const file: IUploadedFile = req.file;
 
   if (file) {
     const uploadToCloudinary = await sendImageToCloudinary(file);
-    req.body.data.admin.profilePhoto = uploadToCloudinary?.secure_url;
+    req.body.admin.profilePhoto = uploadToCloudinary?.secure_url;
 
     console.log(data);
   }
