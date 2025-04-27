@@ -15,12 +15,12 @@ const createAdmin = catchAsync(async (req, res) => {
 });
 
 const createDoctor = catchAsync(async (req, res) => {
-  const result = await UserService.createAdmin(req);
+  const result = await UserService.createDoctor(req);
 
   sendResponse(res, {
     statusCode: status.OK,
     success: true,
-    message: "Admin created successfully",
+    message: "Doctor created successfully",
     data: result,
   });
 });
