@@ -9,10 +9,6 @@ const getAllFromDB = async (
   params: IAdminFilterRequest,
   options: IPaginationOptions
 ) => {
-  console.log({
-    params,
-    options,
-  });
   const { page, limit, skip } = paginationHelper.calculatePagination(options);
   const { searchTerm, ...filterData } = params;
   const andCondition: Prisma.AdminWhereInput[] = [];
