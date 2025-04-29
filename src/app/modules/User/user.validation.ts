@@ -70,8 +70,19 @@ const createPatient = z.object({
   }),
 });
 
+const changeProfileStatus = z.object({
+  body: z.object({
+    status: z.enum(["ACTIVE", "BLOCKED", "DELETED"], {
+      errorMap: () => ({
+        message: "Status must be either ACTIVE, BLOCKED, or DELETED",
+      }),
+    }),
+  }),
+});
+
 export const UserValidationSchema = {
   createAdmin,
   createDoctor,
   createPatient,
+  changeProfileStatus
 };

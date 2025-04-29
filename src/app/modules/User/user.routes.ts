@@ -4,10 +4,15 @@ import { UserController } from "./user.controller";
 import { UserRole } from "@prisma/client";
 import { upload } from "../../middlewares/fileUploader";
 import { UserValidationSchema } from "./user.validation";
+import validateRequest from "../../utils/validateRequest";
 
 const router = Router();
 
-router.get("/", UserController.getAllFromDB);
+router.get(
+  "/",
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  UserController.getAllFromDB
+);
 
 router.post(
   "/create-admin",
@@ -45,6 +50,13 @@ router.post(
 
     return UserController.createPatient(req, res, next);
   }
+);
+
+router.patch(
+  "/:id/status",
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  validateRequest(UserValidationSchema.changeProfileStatus),
+  UserController.changeProfileStatus
 );
 
 export const UserRoutes = router;
