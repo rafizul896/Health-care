@@ -221,10 +221,11 @@ const changeProfileStatus = async (
   return updateUser;
 };
 
-const getMyProfile = async (email: any) => {
+const getMyProfile = async (email: string) => {
   const userData = await prisma.user.findUnique({
     where: {
       email,
+      status: UserStatus.ACTIVE,
     },
     select: {
       id: true,
@@ -262,6 +263,50 @@ const getMyProfile = async (email: any) => {
   return { ...userData, ...profileInfo };
 };
 
+const updateMyProfile = async (email: string, req: Request) => {
+  const updatedData = req.body;
+  const file = req.file as IUploadedFile;
+
+  if (file) {
+    const uploadToCloudinary = await sendImageToCloudinary(file);
+    updatedData.profilePhoto = uploadToCloudinary?.secure_url;
+  }
+
+  const userData = await prisma.user.findUniqueOrThrow({
+    where: {
+      email,
+      status: UserStatus.ACTIVE,
+    },
+  });
+
+  let profileInfo;
+
+  if ((userData.role = UserRole.ADMIN || UserRole.SUPER_ADMIN)) {
+    profileInfo = await prisma.admin.update({
+      where: {
+        email,
+      },
+      data: updatedData,
+    });
+  } else if ((userData.role = UserRole.DOCTOR)) {
+    profileInfo = await prisma.doctor.update({
+      where: {
+        email,
+      },
+      data: updatedData,
+    });
+  } else if ((userData.role = UserRole.PATIENT)) {
+    profileInfo = await prisma.patient.update({
+      where: {
+        email,
+      },
+      data: updatedData,
+    });
+  }
+
+  return profileInfo;
+};
+
 export const UserService = {
   createAdmin,
   createDoctor,
@@ -269,4 +314,5 @@ export const UserService = {
   getAllFromDB,
   changeProfileStatus,
   getMyProfile,
+  updateMyProfile,
 };

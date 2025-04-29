@@ -4,6 +4,7 @@ import status from "http-status";
 import catchAsync from "../../utils/catchAsync ";
 import pick from "../../shared/pick";
 import { userFilterableFields } from "./user.constant";
+import { Request } from "express";
 
 const createAdmin = catchAsync(async (req, res) => {
   const result = await UserService.createAdmin(req);
@@ -65,17 +66,31 @@ const changeProfileStatus = catchAsync(async (req, res) => {
   });
 });
 
-const getMyProfile = catchAsync(async (req, res) => {
+const getMyProfile = catchAsync(async (req: Request & { user?: any }, res) => {
   const user = req.user;
   const result = await UserService.getMyProfile(user.email);
 
   sendResponse(res, {
     statusCode: status.OK,
     success: true,
-    message: "User Profile data fetched!",
+    message: "My Profile data fetched!",
     data: result,
   });
 });
+
+const updateMyProfile = catchAsync(
+  async (req: Request & { user?: any }, res) => {
+    const user = req.user;
+    const result = await UserService.updateMyProfile(user.email, req);
+
+    sendResponse(res, {
+      statusCode: status.OK,
+      success: true,
+      message: "My Profile data updated!",
+      data: result,
+    });
+  }
+);
 
 export const UserController = {
   createAdmin,
@@ -84,4 +99,5 @@ export const UserController = {
   getAllFromDB,
   changeProfileStatus,
   getMyProfile,
+  updateMyProfile,
 };
