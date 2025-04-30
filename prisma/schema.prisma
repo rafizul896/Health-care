@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "./node_modules/.prisma/client"
+  // output   = "./node_modules/.prisma/client"
 }
 
 datasource db {
@@ -61,6 +61,7 @@ model Doctor {
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [email],references: [email])
+  doctorSpecialties DoctorSpecialties[]
 
   @@map("doctors")
 }
@@ -83,6 +84,25 @@ model Patient {
   user User @relation(fields: [email],references: [email])
 
   @@map("patients")
+}
+
+model Specialties {
+  id String @id @default(uuid())
+  title String
+  icon String
+  doctorSpecialties DoctorSpecialties[]
+
+  @@map("specialties")
+}
+
+model DoctorSpecialties {
+  specialitiesId String
+  specialties Specialties @relation(fields: [specialitiesId],references: [id])
+  doctorId String
+  doctor Doctor @relation(fields: [doctorId],references: [id])
+
+  @@id([specialitiesId,doctorId])
+  @@map("doctor_specialties")
 }
 
 enum UserRole {
