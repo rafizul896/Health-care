@@ -11,7 +11,7 @@
    ```
 
 3. **Set up the environment variables**
-   Create a `.env` file and fill in the required variables based on the provided `.env.example` file.
+   create a `.env` file and fill in the required variables based on the provided `.env.example` file.
 
 4. **Run the database migrations**
 
