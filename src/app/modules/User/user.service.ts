@@ -263,7 +263,8 @@ const getMyProfile = async (email: string) => {
   return { ...userData, ...profileInfo };
 };
 
-const updateMyProfile = async (email: string, req: Request) => {
+const updateMyProfile = async (req: Request) => {
+  const email = req.user?.email;
   const updatedData = req.body;
   const file = req.file as IUploadedFile;
 
